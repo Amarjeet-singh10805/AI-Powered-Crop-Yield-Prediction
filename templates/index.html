@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crop Yield</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ═══ NOISE OVERLAY ═══ -->
+<div class="noise"></div>
+
+<!-- ═══ HEADER ═══ -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-leaf">🌾</span>
+      <span class="logo-text">Crop<span class="logo-ai">yield</span></span>
+    </div>
+    <nav class="header-nav">
+      <button class="nav-btn active" data-panel="predict">Predict</button>
+      <button class="nav-btn" data-panel="history">History</button>
+    </nav>
+    <div class="db-badge" id="dbBadge">
+      <span class="db-dot"></span>
+      <span id="dbLabel">Connecting…</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+  <!-- ─── PREDICT PANEL ─── -->
+  <section class="panel" id="panel-predict">
+    <div class="panel-grid">
+
+      <!-- Left: form -->
+      <div class="form-card card">
+        <div class="card-header">
+          <h2>Yield Predictor</h2>
+          <p class="subtitle">Enter field parameters to get an AI-powered yield estimate</p>
+        </div>
+
+        <div class="form-body">
+          <!-- Row 1 -->
+          <div class="field-group">
+            <label class="field-label">Crop Name</label>
+            <div class="select-wrap">
+              <select id="cropSelect" class="field-input">
+                <option value="">Select crop…</option>
+              </select>
+              <span class="select-arrow">▾</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Season</label>
+            <div class="select-wrap">
+              <select id="seasonSelect" class="field-input">
+                <option value="">Select season…</option>
+              </select>
+              <span class="select-arrow">▾</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">State</label>
+            <div class="select-wrap">
+              <select id="stateSelect" class="field-input">
+                <option value="">Select state…</option>
+              </select>
+              <span class="select-arrow">▾</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Area <span class="unit">(hectares)</span></label>
+            <input type="number" id="areaInput" class="field-input" placeholder="e.g. 5000" min="0" step="1">
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Annual Rainfall <span class="unit">(mm)</span></label>
+            <input type="number" id="rainfallInput" class="field-input" placeholder="e.g. 1200" min="0" step="0.1">
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Fertilizer <span class="unit">(kg)</span></label>
+            <input type="number" id="fertilizerInput" class="field-input" placeholder="e.g. 450000" min="0" step="1">
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Pesticide <span class="unit">(kg)</span></label>
+            <input type="number" id="pesticideInput" class="field-input" placeholder="e.g. 1500" min="0" step="0.1">
+          </div>
+        </div>
+
+        <button id="predictBtn" class="predict-btn">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-text">Predict Yield</span>
+          <span class="btn-loader hidden">●●●</span>
+        </button>
+
+        <p id="errorMsg" class="error-msg hidden"></p>
+      </div>
+
+      <!-- Right: result + charts -->
+      <div class="result-side">
+
+        <!-- Result card -->
+        <div class="result-card card hidden" id="resultCard">
+          <div class="result-header">
+            <span class="result-icon">🌱</span>
+            <div>
+              <div class="result-label">Predicted Yield</div>
+              <div class="result-meta" id="resultMeta">—</div>
+            </div>
+          </div>
+          <div class="yield-display">
+            <span id="yieldValue" class="yield-number">—</span>
+            <span class="yield-unit">tons / hectare</span>
+          </div>
+          <div class="yield-bar-wrap">
+            <div class="yield-bar" id="yieldBar"></div>
+          </div>
+          <div class="yield-hint" id="yieldHint"></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-wrap hidden" id="chartsWrap">
+          <div class="chart-card card">
+            <h3 class="chart-title">Year-wise Yield Trend</h3>
+            <img id="trendChart" class="chart-img" alt="Trend chart">
+          </div>
+          <div class="chart-card card">
+            <h3 class="chart-title">State-wise Comparison</h3>
+            <img id="compareChart" class="chart-img" alt="Comparison chart">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HISTORY PANEL ─── -->
+  <section class="panel hidden" id="panel-history">
+    <div class="history-header">
+      <h2>Prediction History</h2>
+      <button class="refresh-btn" id="refreshBtn">↻ Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Crop</th>
+            <th>Season</th>
+            <th>State</th>
+            <th>Area (ha)</th>
+            <th>Rainfall</th>
+            <th>Yield (t/ha)</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr><td colspan="8" class="empty-row">No records yet. Make a prediction first.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <span>Crop yield· Model R² 0.92 · Trained on Indian Agriculture Dataset 1997–2020</span>
+</footer>
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>

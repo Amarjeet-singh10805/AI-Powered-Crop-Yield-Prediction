@@ -46,7 +46,7 @@ raw_df = raw_df[raw_df['Yield'] < raw_df['Yield'].quantile(0.99)].dropna()
 DB_CONFIG = {
     "host":     os.environ.get("DB_HOST",     "localhost"),
     "user":     os.environ.get("DB_USER",     "root"),
-    "password": os.environ.get("DB_PASSWORD", "Jeet12"),
+    "password": os.environ.get("DB_PASSWORD", "Password"),
     "database": os.environ.get("DB_NAME",     "crop_yield"),
 }
 
